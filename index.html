@@ -1,37 +1,68 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>seDirector Control Panel</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
-</head>
-<body>
-  <div id="app">
-    <b-container>
-      <h1>seDirector Control Panel</h1>
-      <b-form-group label="IP Address:">
-        <b-form-input v-model="ipAddress"></b-form-input>
-      </b-form-group>
-      <b-form-group label="Port:">
-        <b-form-input v-model="port"></b-form-input>
-      </b-form-group>
-      <b-form-group label="API Key:">
-        <b-form-input v-model="apiKey"></b-form-input>
-      </b-form-group>
-      <b-button @click="listServers">List Servers</b-button>
-      <b-table :items="servers" :fields="fields">
-        <template #cell(actions)="data">
-          <b-button @click="startServer(data.item.id)">Start</b-button>
-          <b-button @click="stopServer(data.item.id)">Stop</b-button>
-          <b-button @click="restartServer(data.item.id)">Restart</b-button>
-          <b-button @click="updateServer(data.item.id)">Update</b-button>
-        </template>
-      </b-table>
-    </b-container>
-  </div>
 
-  <script src="script.js"></script>
+<head>
+    <title>seDirector Control Panel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
+    <style>
+        .full-height {
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <div id="app" class="d-flex justify-content-center align-items-center full-height">
+        <b-container>
+
+            <h1 style="margin:30px;" class="text-center">seDirector Control Panel</h1>
+
+            <!-- Section for entering server details -->
+            <div v-if="!connected" class="text-center">
+                <b-row>
+                    <b-col cols="12" md="3" class="mx-auto">
+                        <b-form-group label="IP Address:">
+                            <b-form-input class="text-center" v-model="ipAddress"></b-form-input>
+                        </b-form-group>
+                        <b-form-group label="Port:">
+                            <b-form-input class="text-center" v-model="port"></b-form-input>
+                        </b-form-group>
+                        <b-form-group label="API Key:">
+                            <b-form-input class="text-center" v-model="apiKey"></b-form-input>
+                        </b-form-group>
+                        <b-button style="margin:20px;" class="d-block mx-auto" @click="listServers">Validate</b-button>
+                    </b-col>
+                </b-row>
+            </div>
+
+            <!-- Section for displaying server list and actions -->
+<div v-if="connected" class="text-center">
+  <b-table :items="servers" :fields="fields" class="mb-3">
+      <template #cell(actions)="data">
+          <div class="text-center">
+              <b-button v-if="data.item.status === 'Offline'" @click="startServer(data.item.id)" style="background-color: #77d143;">Start</b-button>
+              <b-button v-if="data.item.status === 'Running'" @click="stopServer(data.item.id)" style="background-color: #fe5824;">Stop</b-button>
+              <b-button v-if="data.item.status === 'Running'" @click="restartServer(data.item.id)" style="background-color: #22A7E7;">Restart</b-button>
+              <b-button v-if="data.item.status === 'Offline'" @click="updateServer(data.item.id)" style="background-color: #ff9900;">Update</b-button>
+          </div>
+      </template>
+      
+      <template #cell(currentNumberOfPlayers)="data">
+          <span v-if="data.item.status !== 'Offline'">{{ data.item.currentNumberOfPlayers }}</span>
+      </template>
+
+      <template #cell(currentMap)="data">
+          <span v-if="data.item.status !== 'Offline'">{{ data.item.currentMap }}</span>
+      </template>
+
+  </b-table>
+  <b-button style="margin:20px;" class="d-block mx-auto" @click="disconnect">Disconnect</b-button>
+</div>
+
+    <script src="script.js"></script>
 </body>
+
 </html>
