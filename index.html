@@ -1,174 +1,136 @@
 <!DOCTYPE html>
 <html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta content="width=device-width, initial-scale=1.0" name="viewport" />
 
-<head>
-	<title>Web Control Panel</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
-    <style>
-        .full-height {
-            height: 100vh;
-        }
+		<title>Web Control Panel</title>
 
-        .action-button {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-            line-height: 1.5;
-        }
-		
-		.icon {
-    max-height: 32px;
-    width: auto;
-    margin-right: 5px;
-    vertical-align: middle;
-}
-.b-table .table td, .b-table .table th {
-    padding: 0.25rem;  /* Reduce the padding */
-}
-.icon-container {
-    display: flex;
-    align-items: center;  /* vertically center the items */
-    justify-content: start;  /* Align items to the start of the container */
-}
-.button-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;  /* horizontally center the items */
-    flex-wrap: wrap; /* wrap if necessary */
-}
-.search-input-group {
-    max-width: 250px;  /* Adjust as needed */
-}
-.search-button {
-    width: 25%;  /* 1/4th of full width */
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-}
-.search-icon {
-    width: 16px;  /* Adjust based on your image's dimensions */
-    height: 16px; /* Adjust based on your image's dimensions */
-    vertical-align: middle;
-}
+		<link href="https://sedirector.net/images/favicons/favicon.ico" rel="shortcut icon" />
 
-    </style>
-</head>
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+		<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
 
-<body class="bg-light">
-    <div id="app" class="d-flex justify-content-center align-items-center full-height">
-    <b-container fluid>
+		<link rel="stylesheet" type="text/css" href="style.css" />
+	</head>
 
-        <img src="https://sedirector.net/images/logo.png" alt="seDirector Logo" style="max-width: 100%; height: auto; display: block; margin-bottom: 20px;" class="mx-auto">
+	<body class="bg-light">
+		<div id="app" class="d-flex justify-content-center align-items-center full-height">
+			<b-container fluid>
+				<img src="https://sedirector.net/images/logo.png" alt="seDirector Logo" style="max-width: 100%; height: auto; display: block; margin-bottom: 20px" class="mx-auto" />
 
-        <h1 style="margin:30px;" class="text-center">Web Control Panel</h1>
+				<h1 style="margin: 30px" class="text-center">Web Control Panel</h1>
 
-            <!-- Section for entering server details -->
-            <div v-if="!connected" class="text-center">
-                <b-row>
-                    <b-col cols="12" md="2" class="mx-auto">
-                        <b-form-group label="IP Address:">
-                            <b-form-input class="text-center" v-model="ipAddress"></b-form-input>
-                        </b-form-group>
-                        <b-form-group label="Port:">
-                            <b-form-input class="text-center" v-model="port"></b-form-input>
-                        </b-form-group>
-                        <b-form-group label="API Key:">
-                            <b-form-input class="text-center" v-model="apiKey"></b-form-input>
-                        </b-form-group>
-                        <b-button style="margin:20px;" class="d-block mx-auto" @click="listServers">Validate</b-button>
-                    </b-col>
-                </b-row>
-            </div>
+				<!-- Section for entering server details -->
+				<div v-if="!connected" class="text-center">
+					<b-row>
+						<b-col cols="12" md="2" class="mx-auto">
+							<b-form-group label="IP Address:">
+								<b-form-input class="text-center" v-model="ipAddress"></b-form-input>
+							</b-form-group>
+							<b-form-group label="Port:">
+								<b-form-input class="text-center" v-model="port"></b-form-input>
+							</b-form-group>
+							<b-form-group label="API Key:">
+								<b-form-input class="text-center" v-model="apiKey"></b-form-input>
+							</b-form-group>
+							<b-button style="margin: 20px" class="d-block mx-auto" @click="listServers">Validate</b-button>
+						</b-col>
+					</b-row>
+				</div>
 
-<!-- Section for displaying server list and actions -->
-<div v-if="connected">
+				<!-- Section for displaying server list and actions -->
+				<div v-if="connected">
+					<div v-if="showFilters">
+						<div class="d-flex justify-content-between mb-2">
+							<!-- Filter Dropdown -->
+							<b-dropdown id="filter-dropdown" text="Filter" class="mr-2">
+								<b-dropdown-item @click="() => setFilter('game')">By Game Name</b-dropdown-item>
+								<b-dropdown-divider></b-dropdown-divider>
+								<b-dropdown-item @click="() => setFilter('name')">By Server Name</b-dropdown-item>
+								<b-dropdown-divider></b-dropdown-divider>
+								<b-dropdown-item @click="() => setFilter('status')">By Server Status</b-dropdown-item>
+								<b-dropdown-divider></b-dropdown-divider>
+								<b-dropdown-item @click="() => setFilter('port')">By Port Number</b-dropdown-item>
+								<b-dropdown-divider></b-dropdown-divider>
+								<b-dropdown-item @click="() => setFilter('id')">By ID Number</b-dropdown-item>
+							</b-dropdown>
 
-<div v-if="showFilters">
-    <div class="d-flex justify-content-between mb-2">
+							<!-- Search input with icon and button -->
+							<b-input-group size="sm" class="search-input-group rounded">
+								<b-form-input v-model="searchTerm" placeholder="Search servers..." class="rounded-start"></b-form-input>
+								<b-button variant="secondary" class="search-button rounded-end"><img src="https://i.ibb.co/NWqDZVV/icons8-search-50-1.png" alt="Search" class="search-icon" /></b-button>
+							</b-input-group>
+						</div>
+					</div>
 
+					<b-table :items="paginatedServers" :fields="fields" class="mb-3">
+						<template #cell(status)="data">
+							<img :src="getStatusIconUrl(data.item.status)" alt="Status Icon" style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle" />
+							{{ data.item.status }}
+						</template>
+						<template #cell(game)="data">
+							<img :src="getGameIconUrl(data.item.game)" alt="Game Icon" style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle" class="icon" />
+							{{ data.item.game }}
+						</template>
+						<template #cell(actions)="data">
+							<div class="text-center">
+								<img :src="shouldShowIconInActions(data.item)" v-if="shouldShowIconInActions(data.item)" alt="Updating..." class="icon" />
+								<b-button class="action-button" v-if="data.item.status === 'Offline'" @click="startServer(data.item.id)" style="background-color: #77d143">Start</b-button>
+								<b-button class="action-button" v-if="['Running', 'Starting', 'Error Starting', 'Updating', 'Update Starting'].includes(data.item.status)" @click="stopServer(data.item.id)" style="background-color: #fe5824">
+									Stop
+								</b-button>
+								<b-button class="action-button" v-if="data.item.status === 'Running'" @click="restartServer(data.item.id)" style="background-color: #22a7e7">Restart</b-button>
+								<div v-if="data.item.updating" class="text-center">
+									<img src="https://i.ibb.co/cTtNPLB/icons8-update.gif" alt="Updating..." style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle" />
+									Updating...
+								</div>
+								<!--https://i.ibb.co/WKGxfgD/icons8-loading.gif-->
+								<b-button class="action-button" v-else-if="data.item.status === 'Offline'" @click="updateServer(data.item.id)" style="background-color: #ff9900">Update</b-button>
+							</div>
+						</template>
+						<template #cell(currentNumberOfPlayers)="data">
+							<span
+								v-if="data.item.status !== 'Offline' && data.item.status !== 'Error Starting' && data.item.status !== 'Stopping' && data.item.status !== 'Update Starting' && data.item.status !== 'Updating' && data.item.status !== 'Starting'">
+								{{ data.item.currentNumberOfPlayers }}
+							</span>
+						</template>
+						<template #cell(currentMap)="data">
+							<span
+								v-if="data.item.status !== 'Offline' && data.item.status !== 'Error Starting' && data.item.status !== 'Stopping' && data.item.status !== 'Update Starting' && data.item.status !== 'Updating' && data.item.status !== 'Starting'">
+								{{ data.item.currentMap }}
+							</span>
+						</template>
+					</b-table>
 
-        <!-- Filter Dropdown -->
-        <b-dropdown id="filter-dropdown" text="Filter" class="mr-2">
-            <b-dropdown-item @click="() => setFilter('game')">By Game Name</b-dropdown-item>
-			<b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item @click="() => setFilter('name')">By Server Name</b-dropdown-item>
-			<b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item @click="() => setFilter('status')">By Server Status</b-dropdown-item>
-			<b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item @click="() => setFilter('port')">By Port Number</b-dropdown-item>
-			<b-dropdown-divider></b-dropdown-divider>
-            <b-dropdown-item @click="() => setFilter('id')">By ID Number</b-dropdown-item>
-        </b-dropdown>
+					<div class="d-flex justify-content-center mb-3">
+						<b-button class="action-button mx-2" @click="confirmAction('startAll')" style="background-color: #77d143">Start All</b-button>
+						<b-button class="action-button mx-2" @click="confirmAction('stopAll')" style="background-color: #fe5824">Stop All</b-button>
+						<b-button class="action-button mx-2" @click="confirmAction('restartAll')" style="background-color: #22a7e7">Restart All</b-button>
+						<b-button class="action-button mx-2" @click="confirmAction('updateAll')" style="background-color: #ff9900">Update All</b-button>
+					</div>
 
-        <!-- Search input with icon and button -->
-        <b-input-group size="sm" class="search-input-group rounded">
-            <b-form-input v-model="searchTerm" placeholder="Search servers..." class="rounded-start"></b-form-input>
-            <b-button variant="secondary" class="search-button rounded-end"><img src="https://i.ibb.co/NWqDZVV/icons8-search-50-1.png" alt="Search" class="search-icon">
-        </b-input-group>
-    </div>
-    </div>
+					<div class="d-flex justify-content-between">
+						<div>
+							<b-button v-show="currentPage > 0" @click="previousPage">Previous Page</b-button>
+						</div>
+						<div>
+							<b-button v-if="currentPage < Math.ceil(filteredServers.length / pageSize) - 1" @click="nextPage">Next Page</b-button>
+						</div>
+					</div>
 
-    <b-table :items="paginatedServers" :fields="fields" class="mb-3">
-				<template #cell(status)="data">
-		<img :src="getStatusIconUrl(data.item.status)" alt="Status Icon" style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle;"> {{ data.item.status }}
-</template>
-                    <template #cell(game)="data">
-                        <img :src="getGameIconUrl(data.item.game)" alt="Game Icon" style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle;" class="icon"> {{ data.item.game }}
-                    </template>
-                    <template #cell(actions)="data">
-    <div class="text-center">
-        <img :src="shouldShowIconInActions(data.item)" v-if="shouldShowIconInActions(data.item)" alt="Updating..." class="icon">
-        <b-button class="action-button" v-if="data.item.status === 'Offline'" @click="startServer(data.item.id)" style="background-color: #77d143;">Start</b-button>
-        <b-button class="action-button" v-if="['Running', 'Starting', 'Error Starting', 'Updating', 'Update Starting'].includes(data.item.status)" @click="stopServer(data.item.id)" style="background-color: #fe5824;">Stop</b-button>
-        <b-button class="action-button" v-if="data.item.status === 'Running'" @click="restartServer(data.item.id)" style="background-color: #22A7E7;">Restart</b-button>
-        <div v-if="data.item.updating" class="text-center">
-            <img src="https://i.ibb.co/cTtNPLB/icons8-update.gif" alt="Updating..." style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle;"> Updating...
-        </div>
-		<!--https://i.ibb.co/WKGxfgD/icons8-loading.gif-->
-        <b-button class="action-button" v-else-if="data.item.status === 'Offline'" @click="updateServer(data.item.id)" style="background-color: #ff9900;">Update</b-button>
-    </div>
-</template>
-                    </template>
-                    <template #cell(currentNumberOfPlayers)="data">
-                        <span v-if="data.item.status !== 'Offline' && data.item.status !== 'Error Starting' && data.item.status !== 'Stopping' && data.item.status !== 'Update Starting' && data.item.status !== 'Updating' && data.item.status !== 'Starting'">{{ data.item.currentNumberOfPlayers }}</span>
-                    </template>
-                    <template #cell(currentMap)="data">
-                        <span v-if="data.item.status !== 'Offline' && data.item.status !== 'Error Starting' && data.item.status !== 'Stopping' && data.item.status !== 'Update Starting' && data.item.status !== 'Updating' && data.item.status !== 'Starting'">{{ data.item.currentMap }}</span>
-                    </template>
-                </b-table>
+					<b-button style="margin: 20px" class="d-block mx-auto" @click="disconnectAndReload">Disconnect</b-button>
+				</div>
+			</b-container>
 
-                <div class="d-flex justify-content-center mb-3">
-                    <b-button class="action-button mx-2" @click="confirmAction('startAll')" style="background-color: #77d143;">Start All</b-button>
-                    <b-button class="action-button mx-2" @click="confirmAction('stopAll')" style="background-color: #fe5824;">Stop All</b-button>
-                    <b-button class="action-button mx-2" @click="confirmAction('restartAll')" style="background-color: #22A7E7;">Restart All</b-button>
-                    <b-button class="action-button mx-2" @click="confirmAction('updateAll')" style="background-color: #ff9900;">Update All</b-button>
-                </div>
+			<b-modal id="confirmation-modal" v-model="showModal" @ok="executeAction">
+				<template #modal-title>Confirm Action</template>
+				<p class="my-4">Are you sure you want to {{ currentAction.replace('All', ' all') }} servers?</p>
+			</b-modal>
+		</div>
 
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <b-button v-show="currentPage > 0" @click="previousPage">Previous Page</b-button>
-                    </div>
-                    <div>
-                        <b-button v-if="currentPage < Math.ceil(filteredServers.length / pageSize) - 1" @click="nextPage">Next Page</b-button>
-                    </div>
-                </div>
-
-                <b-button style="margin:20px;" class="d-block mx-auto" @click="disconnectAndReload">Disconnect</b-button>
-            </div>
-
-        </b-container fluid>
-
-        <b-modal id="confirmation-modal" v-model="showModal" @ok="executeAction">
-            <template #modal-title>
-                Confirm Action
-            </template>
-            <p class="my-4">Are you sure you want to {{ currentAction.replace('All', ' all') }} servers?</p>
-        </b-modal>
-
-    </div>
-
-    <script src="script.js"></script>
-</body>
-
+		<script src="script.js"></script>
+	</body>
 </html>

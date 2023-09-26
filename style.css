@@ -1,0 +1,46 @@
+.action-button {
+	padding: 0.25rem 0.5rem;
+	font-size: 0.875rem;
+	line-height: 1.5;
+}
+
+.icon {
+	max-height: 32px;
+	width: auto;
+	margin-right: 5px;
+	vertical-align: middle;
+}
+
+.b-table .table td,
+.b-table .table th {
+	padding: 0.25rem;
+}
+
+.icon-container {
+	display: flex;
+	align-items: center;
+	justify-content: start;
+}
+
+.button-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+}
+
+.search-input-group {
+	max-width: 250px;
+}
+
+.search-button {
+	width: 25%;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
+.search-icon {
+	width: 16px;
+	height: 16px;
+	vertical-align: middle;
+}
