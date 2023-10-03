@@ -27,14 +27,14 @@
 				<div v-if="!connected" class="text-center">
 					<b-row>
 						<b-col cols="12" md="2" class="mx-auto">
-							<b-form-group label="IP Address:">
-								<b-form-input class="text-center" v-model="ipAddress"></b-form-input>
+							<b-form-group label="IP Address/Hostname:">
+								<b-form-input class="text-center" v-model="ipAddress" value="cp-demo.sedirector.net"></b-form-input>
 							</b-form-group>
 							<b-form-group label="Port:">
-								<b-form-input class="text-center" v-model="port"></b-form-input>
+								<b-form-input class="text-center" v-model="port" value="20447"></b-form-input>
 							</b-form-group>
 							<b-form-group label="API Key:">
-								<b-form-input class="text-center" v-model="apiKey"></b-form-input>
+								<b-form-input class="text-center" v-model="apiKey" value="8aQ2DSRFqpLihtO34XiFVIpD"></b-form-input>
 							</b-form-group>
 							<b-button style="margin: 20px" class="d-block mx-auto" @click="listServers">Validate</b-button>
 						</b-col>
