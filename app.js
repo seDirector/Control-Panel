@@ -22,14 +22,15 @@ createApp({
     },
     methods: {
         loadCredentials() {
-            this.ipAddress = localStorage.getItem('ipAddress') || '';
+            // Disabled for demo
+            /* this.ipAddress = localStorage.getItem('ipAddress') || '';
             this.port = localStorage.getItem('port') || '';
             this.apiKey = localStorage.getItem('apiKey') || '';
 
             // Check if credentials are available before calling listServers
             if (this.ipAddress && this.port && this.apiKey) {
                 this.listServers();
-            }
+            } */
         },
         saveCredentials() {
             localStorage.setItem('ipAddress', this.ipAddress);
