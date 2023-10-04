@@ -1,22 +1,24 @@
-new Vue({
-    el: '#app',
-    data: {
-        ipAddress: '',
-        port: '',
-        apiKey: '',
-        servers: [],
-        fields: ['status', 'id', 'game', 'name', 'port', 'currentNumberOfPlayers', 'currentMap', 'uptime', 'actions'],
-        connected: false,
-        refreshInterval: null,
-        currentPage: 0,
-        pageSize: 8,
-        showModal: false,
-        currentFilter: null,
-        showFilters: true,
-        searchTerm: '',
-        activeFilter: null,
-        isFilterActive: false,
-        currentAction: ''
+const { createApp } = Vue
+createApp({
+    data() {
+        return {
+            ipAddress: 'cp-demo.sedirector.net',
+            port: '443',
+            apiKey: '8aQ2DSRFqpLihtO34XiFVIpD',
+            servers: [],
+            fields: ['status', 'id', 'game', 'name', 'port', 'currentNumberOfPlayers', 'currentMap', 'uptime', 'actions'],
+            connected: false,
+            refreshInterval: null,
+            currentPage: 0,
+            pageSize: 8,
+            showModal: false,
+            currentFilter: null,
+            showFilters: true,
+            searchTerm: '',
+            activeFilter: null,
+            isFilterActive: false,
+            currentAction: ''
+        };
     },
     methods: {
         loadCredentials() {
@@ -207,10 +209,8 @@ new Vue({
 
             return statusIconMap[server.status] || '';
         },
-
         getStatusIconUrl(status) {
             const statusIcons = {
-
                 'Offline': 'https://i.ibb.co/VgHk2WM/offline.png',
                 'Running': 'https://i.ibb.co/pxtxwvz/running.png',
                 'Error Starting': 'https://i.ibb.co/TLjDLt5/icons8-error.gif',
@@ -219,7 +219,6 @@ new Vue({
                 'Update Starting': 'https://i.ibb.co/cTtNPLB/icons8-update.gif',
                 'Stopping': 'https://i.ibb.co/gMQC4c7/icons8-loading-2.gif',
                 'Starting': 'https://i.ibb.co/6gCpQXx/icons8-loading-1.gif',
-                // ... other statuses
             };
 
             if (!statusIcons[status]) {
@@ -246,7 +245,6 @@ new Vue({
                     (server.status ? server.status.includes(this.searchTerm) : false) ||
                     (server.port ? server.port.includes(this.searchTerm) : false) ||
                     (server.serverid ? server.serverid.includes(this.searchTerm) : false);
-                // Add other fields as necessary
             });
         },
         getGameIconUrl() {
@@ -279,9 +277,9 @@ new Vue({
         this.loadCredentials();
         this.startPolling();
     },
-    beforeDestroy() {
+    beforeUnmount() {
         if (this.refreshInterval) {
             clearInterval(this.refreshInterval);
         }
     }
-});
+}).mount('#app');
