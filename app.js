@@ -54,7 +54,7 @@ createApp({
         },
         validateApiKey() {
             // Construct your API URL
-            const url = `http://${this.ipAddress}:${this.port}/api/servers?apikey=${this.apiKey}`;
+            const url = `https://${this.ipAddress}:${this.port}/api/servers?apikey=${this.apiKey}`;
 
             // Use jQuery's ajax method to get server data
             $.ajax({
