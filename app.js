@@ -48,9 +48,9 @@ createApp({
         },
         apiURL(action, serverId) {
             if (serverId !== undefined) {
-                return `http://${this.ipAddress}:${this.port}/api/servers/${action}/${serverId}?apikey=${this.apiKey}`;
+                return `https://${this.ipAddress}:${this.port}/api/servers/${action}/${serverId}?apikey=${this.apiKey}`;
             }
-            return `http://${this.ipAddress}:${this.port}/api/servers?apikey=${this.apiKey}`;
+            return `https://${this.ipAddress}:${this.port}/api/servers?apikey=${this.apiKey}`;
         },
         validateApiKey() {
             // Construct your API URL
