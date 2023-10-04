@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,19 +19,17 @@
 		<!-- App Stylesheet -->
 		<link rel="stylesheet" type="text/css" href="style.css" />
 	</head>
-
 	<body class="bg-light">
 		<div id="app" class="d-flex justify-content-center align-items-center full-height">
 			<div class="container-fluid">
-				<img src="https://sedirector.net/images/logo.png" alt="seDirector Logo" style="max-width: 100%; height: auto; display: block; margin-bottom: 20px" class="mx-auto" />
-				<h1 style="margin: 30px" class="text-center">Web Control Panel</h1>
+				<img src="https://sedirector.net/images/logo.png" alt="seDirector Logo" class="mx-auto d-block" style="max-width: 100%; height: auto; margin-bottom: 20px" />
+				<h1 class="text-center" style="margin: 30px">Web Control Panel</h1>
 
-				<!-- Section for entering server details -->
 				<div v-if="!connected" class="text-center">
 					<div class="row">
 						<div class="col-12 col-md-2 mx-auto">
 							<div class="form-group">
-								<label>IP Address:</label>
+								<label>IP Address/Hostname:</label>
 								<input type="text" class="form-control text-center" v-model="ipAddress" />
 							</div>
 							<div class="form-group">
@@ -48,11 +46,9 @@
 					</div>
 				</div>
 
-				<!-- Section for displaying server list and actions -->
 				<div v-if="connected">
 					<div v-if="showFilters">
 						<div class="d-flex justify-content-between mb-2">
-							<!-- Filter Dropdown -->
 							<div class="dropdown">
 								<button class="btn btn-secondary dropdown-toggle" type="button" id="filter-dropdown" data-bs-toggle="dropdown">Filter</button>
 								<ul class="dropdown-menu">
@@ -67,66 +63,38 @@
 									<li><a class="dropdown-item" @click="() => setFilter('id')">By ID Number</a></li>
 								</ul>
 							</div>
-
-							<!-- Search input with icon and button -->
-							<div class="input-group input-group-sm">
-								<input type="text" class="form-control" v-model="searchTerm" placeholder="Search servers..." />
-								<button class="btn btn-secondary" type="button"><img src="https://i.ibb.co/NWqDZVV/icons8-search-50-1.png" alt="Search" class="search-icon" /></button>
+							<div class="input-group input-group-sm rounded">
+								<input type="text" v-model="searchTerm" placeholder="Search servers..." class="form-control rounded-start" />
+								<button class="btn btn-secondary rounded-end" type="button"><img src="https://i.ibb.co/NWqDZVV/icons8-search-50-1.png" alt="Search" class="search-icon" /></button>
 							</div>
 						</div>
 					</div>
 
-					<!-- Table conversion -->
-					<table class="table mb-3">
+					<table class="table table-striped mb-3">
 						<thead>
 							<tr>
-								<th>Status</th>
-								<th>Game</th>
-								<th>Name</th>
-								<th>Port</th>
-								<th>Uptime</th>
-								<th>Actions</th>
-								<th>Current Number of Players</th>
-								<th>Current Map</th>
+								<th scope="col">ID</th>
+								<th scope="col">Name</th>
+								<th scope="col">Game</th>
+								<th scope="col">Status</th>
+								<th scope="col">Players</th>
+								<th scope="col">Port</th>
+								<th scope="col">Actions</th>
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="server in paginatedServers">
-								<td>
-									<img :src="getStatusIconUrl(server.status)" alt="Status Icon" style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle" />
-									{{ server.status }}
-								</td>
-								<td>
-									<img :src="getGameIconUrl(server.game)" alt="Game Icon" style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle" />
-									{{ server.game }}
-								</td>
+							<tr v-for="server in paginatedServers" :key="server.id">
+								<td>{{ server.id }}</td>
 								<td>{{ server.name }}</td>
+								<td>{{ server.game }}</td>
+								<td>{{ server.status }}</td>
+								<td>{{ server.players }}</td>
 								<td>{{ server.port }}</td>
-								<td>{{ server.uptime }}</td>
 								<td>
-									<div class="text-center">
-										<img :src="shouldShowIconInActions(server)" v-if="shouldShowIconInActions(server)" alt="Updating..." />
-										<button class="btn btn-success" v-if="server.status === 'Offline'" @click="startServer(server.id)">Start</button>
-										<button class="btn btn-danger" v-if="['Running', 'Starting', 'Error Starting', 'Update Error', 'Updating', 'Update Starting'].includes(server.status)" @click="stopServer(server.id)">Stop</button>
-										<button class="btn btn-info" v-if="server.status === 'Running'" @click="restartServer(server.id)">Restart</button>
-										<div v-if="server.updating" class="text-center">
-											<img src="https://i.ibb.co/cTtNPLB/icons8-update.gif" alt="Updating..." style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle" />
-											Updating...
-										</div>
-										<button class="btn btn-warning" v-else-if="server.status === 'Offline'" @click="updateServer(server.id)">Update</button>
-									</div>
-								</td>
-								<td>
-									<span
-										v-if="server.status !== 'Offline' && server.status !== 'Error Starting' && server.status !== 'Stopping' && server.status !== 'Update Starting' && server.status !== 'Updating' && server.status !== 'Starting'">
-										{{ server.currentNumberOfPlayers }}
-									</span>
-								</td>
-								<td>
-									<span
-										v-if="server.status !== 'Offline' && server.status !== 'Error Starting' && server.status !== 'Stopping' && server.status !== 'Update Starting' && server.status !== 'Updating' && server.status !== 'Starting'">
-										{{ server.currentMap }}
-									</span>
+									<button class="btn btn-success mx-1" @click="startServer(server.id)">Start</button>
+									<button class="btn btn-danger mx-1" @click="stopServer(server.id)">Stop</button>
+									<button class="btn btn-info mx-1" @click="restartServer(server.id)">Restart</button>
+									<button class="btn btn-warning mx-1" @click="updateServer(server.id)">Update</button>
 								</td>
 							</tr>
 						</tbody>
@@ -145,25 +113,6 @@
 					</div>
 
 					<button class="btn btn-secondary d-block mx-auto" style="margin: 20px" @click="disconnectAndReload">Disconnect</button>
-				</div>
-			</div>
-
-			<!-- Modal -->
-			<div class="modal fade" id="confirmation-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-				<div class="modal-dialog">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title" id="exampleModalLabel">Confirm Action</h5>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-						</div>
-						<div class="modal-body">
-							<p class="my-4">Are you sure you want to {{ currentAction.replace('All', ' all') }} servers?</p>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-							<button type="button" class="btn btn-primary" @click="executeAction">OK</button>
-						</div>
-					</div>
 				</div>
 			</div>
 		</div>

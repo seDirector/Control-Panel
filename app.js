@@ -17,20 +17,24 @@ createApp({
             searchTerm: '',
             activeFilter: null,
             isFilterActive: false,
-            currentAction: ''
+            currentAction: '',
+            authMessage: '',
+            authMessageColor: 'black'
         };
     },
     methods: {
         loadCredentials() {
             // Disabled for demo
-            /* this.ipAddress = localStorage.getItem('ipAddress') || '';
+            /*          
+            this.ipAddress = localStorage.getItem('ipAddress') || '';
             this.port = localStorage.getItem('port') || '';
             this.apiKey = localStorage.getItem('apiKey') || '';
-
+            
             // Check if credentials are available before calling listServers
             if (this.ipAddress && this.port && this.apiKey) {
                 this.listServers();
-            } */
+            }
+            */
         },
         saveCredentials() {
             localStorage.setItem('ipAddress', this.ipAddress);
@@ -44,9 +48,36 @@ createApp({
         },
         apiURL(action, serverId) {
             if (serverId !== undefined) {
-                return `https://${this.ipAddress}:${this.port}/api/servers/${action}/${serverId}?apikey=${this.apiKey}`;
+                return `http://${this.ipAddress}:${this.port}/api/servers/${action}/${serverId}?apikey=${this.apiKey}`;
             }
-            return `https://${this.ipAddress}:${this.port}/api/servers?apikey=${this.apiKey}`;
+            return `http://${this.ipAddress}:${this.port}/api/servers?apikey=${this.apiKey}`;
+        },
+        validateApiKey() {
+            // Construct your API URL
+            const url = `http://${this.ipAddress}:${this.port}/api/servers?apikey=${this.apiKey}`;
+
+            // Use jQuery's ajax method to get server data
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'json',
+                success: (data) => {
+                    // Handle the response from the server
+                    if (data.success) {  // Adapt condition based on your API response
+                        this.authMessage = "Authentication Successful";
+                        this.authMessageColor = 'green';
+                        this.connected = true;
+                    } else {
+                        this.authMessage = "Authentication Failed. Wrong API Key.";
+                        this.authMessageColor = 'red';
+                    }
+                },
+                error: (jqXHR, textStatus, errorThrown) => {
+                    console.error('AJAX error: ', textStatus, errorThrown);
+                    this.authMessage = "Authentication Failed. Please check your connection details.";
+                    this.authMessageColor = 'red';
+                }
+            });
         },
         searchServers() {
             if (!this.searchTerm) return this.servers;
@@ -205,21 +236,28 @@ createApp({
                 'Update Starting': 'https://i.ibb.co/cTtNPLB/icons8-update.gif',
                 'Stopping': 'https://i.ibb.co/gMQC4c7/icons8-loading-2.gif',
                 'Error Starting': 'https://i.ibb.co/TLjDLt5/icons8-error.gif',
+                'Update Error': 'https://i.ibb.co/TLjDLt5/icons8-error.gif',
                 'Starting': 'https://i.ibb.co/6gCpQXx/icons8-loading-1.gif',
+                'Pending Update': 'https://i.ibb.co/N1VPGGK/icons8-update.gif',
             };
 
             return statusIconMap[server.status] || '';
         },
+
         getStatusIconUrl(status) {
             const statusIcons = {
+
                 'Offline': 'https://i.ibb.co/VgHk2WM/offline.png',
                 'Running': 'https://i.ibb.co/pxtxwvz/running.png',
                 'Error Starting': 'https://i.ibb.co/TLjDLt5/icons8-error.gif',
+                'Update Error': 'https://i.ibb.co/TLjDLt5/icons8-error.gif',
                 'Restarting': 'https://i.ibb.co/g415yBM/restarting.png',
                 'Updating': 'https://i.ibb.co/cTtNPLB/icons8-update.gif',
                 'Update Starting': 'https://i.ibb.co/cTtNPLB/icons8-update.gif',
                 'Stopping': 'https://i.ibb.co/gMQC4c7/icons8-loading-2.gif',
                 'Starting': 'https://i.ibb.co/6gCpQXx/icons8-loading-1.gif',
+                'Pending Update': 'https://i.ibb.co/N1VPGGK/icons8-update.gif',
+                // ... other statuses
             };
 
             if (!statusIcons[status]) {
@@ -246,6 +284,7 @@ createApp({
                     (server.status ? server.status.includes(this.searchTerm) : false) ||
                     (server.port ? server.port.includes(this.searchTerm) : false) ||
                     (server.serverid ? server.serverid.includes(this.searchTerm) : false);
+                // Add other fields as necessary
             });
         },
         getGameIconUrl() {
