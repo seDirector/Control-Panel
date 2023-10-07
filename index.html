@@ -1,172 +1,260 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Web Control Panel</title>
-		<link rel="shortcut icon" href="https://sedirector.net/images/favicons/favicon.ico" />
 
-		<!-- jQuery-->
-		<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Web Control Panel</title>
+	<link rel="shortcut icon" href="https://sedirector.net/images/favicons/favicon.ico" />
 
-		<!-- Vue 3 -->
-		<script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
+	<!-- jQuery-->
+	<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"
+		integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
-		<!-- Bootstrap 5 CSS and JS -->
-		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+	<!-- Vue 3 -->
+	<script src="https://cdn.jsdelivr.net/npm/vue@3.3.4/dist/vue.global.js"></script>
 
-		<!-- App Stylesheet -->
-		<link rel="stylesheet" type="text/css" href="style.css" />
-	</head>
+	<!-- Bootstrap 5 CSS and JS -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+		crossorigin="anonymous"></script>
 
-	<body class="bg-light">
-		<div id="app" class="d-flex justify-content-center align-items-center full-height">
-			<div class="container-fluid">
-				<img src="https://sedirector.net/images/logo.png" alt="seDirector Logo" style="max-width: 100%; height: auto; display: block; margin-bottom: 20px" class="mx-auto" />
-				<h1 style="margin: 30px" class="text-center">Web Control Panel</h1>
+	<!-- App Stylesheet -->
+	<link id="main-stylesheet" rel="stylesheet" type="text/css" href="style.css" />
+</head>
 
-				<!-- Section for entering server details -->
-				<div v-if="!connected" class="text-center">
-					<div class="row">
-						<div class="col-12 col-md-2 mx-auto">
-							<div class="form-group">
-								<label>IP Address:</label>
-								<input type="text" class="form-control text-center" v-model="ipAddress" />
-							</div>
-							<div class="form-group">
-								<label>Port:</label>
-								<input type="text" class="form-control text-center" v-model="port" />
-							</div>
-							<div class="form-group">
-								<label>API Key:</label>
-								<input type="text" class="form-control text-center" v-model="apiKey" />
-							</div>
-							<p :style="{ color: authMessageColor }"><strong>{{ authMessage }}</strong></p>
-							<button class="btn btn-primary d-block mx-auto" style="margin: 20px" @click="validateApiKey">Validate</button>
+<body class="bg-light">
+
+	<div class="theme-switch-wrapper">
+		<label class="theme-switch" for="checkbox">
+			<input type="checkbox" id="checkbox" />
+			<div class="slider round"></div>
+		</label>
+	</div>
+
+	<div id="app" class="d-flex justify-content-center align-items-center full-height">
+
+		<div class="container-fluid">
+			<img id="logo" src="https://sedirector.adrenaline-gaming.net/images/official/logo.png" alt="seDirector Logo"
+				style="max-width: 100%; height: auto; display: block; margin-top: 60px; margin-bottom: 40px"
+				class="mx-auto" />
+			<h1 style="margin: 30px" class="text-center">Web Control Panel</h1>
+
+			<!-- Section for entering server details -->
+			<div v-if="!connected" class="text-center">
+				<div class="row">
+					<div class="col-12 col-md-2 mx-auto">
+						<div class="form-group">
+							<label>IP Address:</label>
+							<input type="text" class="form-control text-center" v-model="ipAddress" />
 						</div>
-					</div>
-				</div>
-
-				<!-- Section for displaying server list and actions -->
-				<div v-if="connected">
-					<div v-if="showFilters">
-						<div class="d-flex justify-content-between mb-2">
-							<!-- Filter Dropdown -->
-							<div class="dropdown">
-								<button class="btn btn-secondary dropdown-toggle" type="button" id="filter-dropdown" data-bs-toggle="dropdown">Filter</button>
-								<ul class="dropdown-menu">
-									<li><a class="dropdown-item" @click="() => setFilter('game')">By Game Name</a></li>
-									<li><hr class="dropdown-divider" /></li>
-									<li><a class="dropdown-item" @click="() => setFilter('name')">By Server Name</a></li>
-									<li><hr class="dropdown-divider" /></li>
-									<li><a class="dropdown-item" @click="() => setFilter('status')">By Server Status</a></li>
-									<li><hr class="dropdown-divider" /></li>
-									<li><a class="dropdown-item" @click="() => setFilter('port')">By Port Number</a></li>
-									<li><hr class="dropdown-divider" /></li>
-									<li><a class="dropdown-item" @click="() => setFilter('id')">By ID Number</a></li>
-								</ul>
-							</div>
-
-							<!-- Search input with icon and button -->
-							<div class="input-group input-group-sm">
-								<input type="text" class="form-control" v-model="searchTerm" placeholder="Search servers..." />
-								<button class="btn btn-secondary" type="button"><img src="https://i.ibb.co/NWqDZVV/icons8-search-50-1.png" alt="Search" class="search-icon" /></button>
-							</div>
+						<div class="form-group">
+							<label>Port:</label>
+							<input type="text" class="form-control text-center" v-model="port" />
 						</div>
+						<div class="form-group">
+							<label>API Key:</label>
+							<input type="text" class="form-control text-center" v-model="apiKey" />
+						</div>
+						<p v-show="showAuthMessage" :style="{ color: authMessageColor }">{{ authMessage }}</p>
+						<button class="btn btn-primary" style="margin: 20px" v-show="showValidationButton"
+							@click="validateApiKey">Validate</button>
 					</div>
-
-					<!-- Table conversion -->
-					<table class="table mb-3">
-						<thead>
-							<tr>
-								<th>Status</th>
-								<th>Game</th>
-								<th>Name</th>
-								<th>Port</th>
-								<th>Uptime</th>
-								<th>Actions</th>
-								<th>Current Number of Players</th>
-								<th>Current Map</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr v-for="server in paginatedServers">
-								<td>
-									<img :src="getStatusIconUrl(server.status)" alt="Status Icon" style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle" />
-									{{ server.status }}
-								</td>
-								<td>
-									<img :src="getGameIconUrl(server.game)" alt="Game Icon" style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle" />
-									{{ server.game }}
-								</td>
-								<td>{{ server.name }}</td>
-								<td>{{ server.port }}</td>
-								<td>{{ server.uptime }}</td>
-								<td>
-									<div class="text-center">
-										<img :src="shouldShowIconInActions(server)" v-if="shouldShowIconInActions(server)" alt="Updating..." />
-										<button class="btn btn-success" v-if="server.status === 'Offline'" @click="startServer(server.id)">Start</button>
-										<button class="btn btn-danger" v-if="['Running', 'Starting', 'Error Starting', 'Update Error', 'Updating', 'Update Starting'].includes(server.status)" @click="stopServer(server.id)">Stop</button>
-										<button class="btn btn-info" v-if="server.status === 'Running'" @click="restartServer(server.id)">Restart</button>
-										<div v-if="server.updating" class="text-center">
-											<img src="https://i.ibb.co/cTtNPLB/icons8-update.gif" alt="Updating..." style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle" />
-											Updating...
-										</div>
-										<button class="btn btn-warning" v-else-if="server.status === 'Offline'" @click="updateServer(server.id)">Update</button>
-									</div>
-								</td>
-								<td>
-									<span
-										v-if="server.status !== 'Offline' && server.status !== 'Error Starting' && server.status !== 'Stopping' && server.status !== 'Update Starting' && server.status !== 'Updating' && server.status !== 'Starting'">
-										{{ server.currentNumberOfPlayers }}
-									</span>
-								</td>
-								<td>
-									<span
-										v-if="server.status !== 'Offline' && server.status !== 'Error Starting' && server.status !== 'Stopping' && server.status !== 'Update Starting' && server.status !== 'Updating' && server.status !== 'Starting'">
-										{{ server.currentMap }}
-									</span>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-
-					<div class="d-flex justify-content-center mb-3">
-						<button class="btn btn-success mx-2" @click="confirmAction('startAll')">Start All</button>
-						<button class="btn btn-danger mx-2" @click="confirmAction('stopAll')">Stop All</button>
-						<button class="btn btn-info mx-2" @click="confirmAction('restartAll')">Restart All</button>
-						<button class="btn btn-warning mx-2" @click="confirmAction('updateAll')">Update All</button>
-					</div>
-
-					<div class="d-flex justify-content-between">
-						<button class="btn btn-secondary" v-show="currentPage > 0" @click="previousPage">Previous Page</button>
-						<button class="btn btn-secondary" v-if="currentPage < Math.ceil(filteredServers.length / pageSize) - 1" @click="nextPage">Next Page</button>
-					</div>
-
-					<button class="btn btn-secondary d-block mx-auto" style="margin: 20px" @click="disconnectAndReload">Disconnect</button>
 				</div>
 			</div>
 
-			<!-- Modal -->
-			<div class="modal fade" id="confirmation-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-				<div class="modal-dialog">
-					<div class="modal-content">
-						<div class="modal-header">
-							<h5 class="modal-title" id="exampleModalLabel">Confirm Action</h5>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			<!-- Section for displaying server list and actions -->
+			<div v-if="connected">
+				<div v-if="showFilters">
+					<div class="d-flex justify-content-between mb-2">
+						<!-- Filter Dropdown -->
+						<div class="dropdown">
+							<button class="btn btn-secondary dropdown-toggle" type="button" id="filter-dropdown"
+								data-bs-toggle="dropdown">Filter By</button>
+							<ul class="dropdown-menu">
+								<li :class="{ 'selected-filter': selectedFilter === 'id' }"><a class="dropdown-item"
+										@click="() => setFilter('id')">Default</a></li>
+								<li>
+									<hr class="dropdown-divider" />
+								</li>
+								<li :class="{ 'selected-filter': selectedFilter === 'name' }"><a class="dropdown-item"
+										@click="() => setFilter('name')">Server Name</a></li>
+								<li>
+									<hr class="dropdown-divider" />
+								</li>
+								<li :class="{ 'selected-filter': selectedFilter === 'game' }"><a class="dropdown-item"
+										@click="() => setFilter('game')">Game Name</a></li>
+								<li>
+									<hr class="dropdown-divider" />
+								</li>
+								<li :class="{ 'selected-filter': selectedFilter === 'status' }"><a class="dropdown-item"
+										@click="() => setFilter('status')">Server Status</a></li>
+								<li>
+									<hr class="dropdown-divider" />
+								</li>
+								<li :class="{ 'selected-filter': selectedFilter === 'port' }"><a class="dropdown-item"
+										@click="() => setFilter('port')">Port Number</a></li>
+							</ul>
 						</div>
-						<div class="modal-body">
-							<p class="my-4">Are you sure you want to {{ currentAction.replace('All', ' all') }} servers?</p>
+
+						<!-- Search input with icon and button -->
+						<div class="input-group size-sm input-group mb3 search-input-group">
+							<input type="text" class="form-control" v-model="searchTerm"
+								placeholder="Search servers..." />
+							<button class="btn btn-secondary" type="button">
+								<img src="https://i.ibb.co/NWqDZVV/icons8-search-50-1.png" alt="Search"
+									class="search-icon" />
+							</button>
 						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-							<button type="button" class="btn btn-primary" @click="executeAction">OK</button>
+
+					</div>
+				</div>
+
+				<!-- Table conversion -->
+				<table class="table mb-3">
+					<thead>
+						<tr>
+							<th></th>
+							<th>Server Name</th>
+							<th>Status</th>
+							<th>Uptime</th>
+							<th>Port</th>
+							<th>Current Map</th>
+							<th>Current Number of Players</th>
+							<th>Game</th>
+							<th class="text-center">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="server in paginatedServers">
+							<td>
+								<div style="display: flex; align-items: center;">
+									<img :src="getStatusIconUrl(server.status)" alt="Status Icon"
+										style="max-height: 32px; width: auto; margin-right: 5px;" />
+									<span></span>
+								</div>
+							</td>
+							<td>{{ server.name }}</td>
+							<td>{{ server.status }}</td>
+							<td>{{ server.uptime }}</td>
+							<td>{{ server.port }}</td>
+							<td>{{ server.currentMap }}</td>
+							<td>{{ server.currentNumberOfPlayers }}</td>
+							<td>
+								<img :src="getGameIconUrl(server.game)" alt="Game Icon"
+									style="max-height: 32px; width: auto; margin-right: 5px; vertical-align: middle" />
+								{{ server.game }}
+							</td>
+							<td>
+								<div class="text-center">
+									<img :src="shouldShowIconInActions(server)" v-if="shouldShowIconInActions(server)"
+										alt="Updating..." />
+									<button class="btn btn-start mx-1 button-border" v-if="server.status === 'Offline'"
+										@click="startServer(server.id)">Start</button>
+									<button class="btn btn-stop mx-1 button-border"
+										v-if="['Running', 'Starting', 'Error Starting', 'Update Error', 'Updating', 'Update Starting'].includes(server.status)"
+										@click="stopServer(server.id)">Stop</button>
+									<button class="btn btn-restart mx-1 button-border"
+										v-if="server.status === 'Running'"
+										@click="restartServer(server.id)">Restart</button>
+									<button class="btn btn-update mx-1 button-border"
+										v-else-if="server.status === 'Offline'"
+										@click="updateServer(server.id)">Update</button>
+
+								</div>
+							</td>
+						</tr>
+					</tbody>
+
+				</table>
+
+				<div class="d-flex justify-content-center mb-3">
+					<button class="btn btn-start-all mx-2" @click="openModal('startAll')">Start All</button>
+					<button class="btn btn-stop-all mx-2" @click="openModal('stopAll')">Stop All</button>
+
+					<!-- <button class="btn btn-primary mx-2" style="background-color: #22a7e7" @click="confirmAction('restartAll')">Restart All</button> -->
+					<!-- <button class="btn btn-danger mx-2" style="background-color: #ff9900" @click="confirmAction('updateAll')">Update All</button> -->
+				</div>
+
+				<div class="d-flex justify-content-between">
+					<div>
+						<button class="btn btn-secondary" v-show="currentPage > 0" @click="previousPage">Previous
+							Page</button>
+					</div>
+					<div>
+						<button class="btn btn-secondary"
+							v-if="currentPage < Math.ceil(filteredServers.length / pageSize) - 1" @click="nextPage">Next
+							Page</button>
+					</div>
+				</div>
+
+				<button class="btn btn-secondary d-block mx-auto" style="margin: 20px"
+					@click="showDisconnectModal">Disconnect</button>
+
+				<!-- Disconnect Confirmation Modal -->
+				<div class="modal fade" id="disconnectModal" tabindex="-1" aria-labelledby="disconnectModalLabel"
+					aria-hidden="true">
+					<div class="modal-dialog">
+						<div class="modal-content">
+							<div class="modal-header">
+								<h5 class="modal-title" id="disconnectModalLabel">Disconnect</h5>
+								<button type="button" class="btn-close" data-bs-dismiss="modal"
+									aria-label="Close"></button>
+							</div>
+							<div class="modal-body">
+								Are you sure you want to disconnect?
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+								<button type="button" class="btn btn-primary" @click="disconnectAndReload">Yes</button>
+							</div>
 						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+
+		<!-- Modal For Start All and Stop All-->
+		<div class="modal fade" id="confirmation-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+			aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel">Confirm Action</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<p class="my-4">Are you sure you want to {{ currentAction.replace('All', ' all') }} servers?</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary" @click="executeAction"
+							data-bs-dismiss="modal">OK</button>
 					</div>
 				</div>
 			</div>
 		</div>
-		<script src="app.js"></script>
-	</body>
+	</div>
+	<script src="app.js"></script>
+	<script>
+		document.getElementById('checkbox').addEventListener('change', function (event) {
+			let mainStylesheet = document.getElementById('main-stylesheet');
+			let logo = document.getElementById('logo');
+
+			if (event.target.checked) {
+				mainStylesheet.setAttribute('href', 'dark-theme.css');
+				logo.setAttribute('src', 'https://sedirector.adrenaline-gaming.net/images/official/logo_white_text.png');
+			} else {
+				mainStylesheet.setAttribute('href', 'style.css');
+				logo.setAttribute('src', 'https://sedirector.adrenaline-gaming.net/images/official/logo.png');
+			}
+		});
+
+
+	</script>
+</body>
+
 </html>

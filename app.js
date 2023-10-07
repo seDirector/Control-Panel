@@ -2,21 +2,25 @@ const { createApp } = Vue
 createApp({
     data() {
         return {
-            ipAddress: 'cp-demo.sedirector.net',
-            port: '443',
-            apiKey: '8aQ2DSRFqpLihtO34XiFVIpD',
+            ipAddress: '',
+            port: '',
+            apiKey: '',
             servers: [],
-            fields: ['status', 'id', 'game', 'name', 'port', 'currentNumberOfPlayers', 'currentMap', 'uptime', 'actions'],
+            fields: ['id', 'name', 'status', 'uptime', 'port', 'currentMap', 'currentNumberOfPlayers', 'game', 'actions'],
             connected: false,
             refreshInterval: null,
             currentPage: 0,
             pageSize: 8,
             showModal: false,
+            showValidationButton: true,
+            showAuthMessage: false,
             currentFilter: null,
             showFilters: true,
             searchTerm: '',
             activeFilter: null,
+            selectedFilter: null, // or a default value
             isFilterActive: false,
+			isDarkTheme: false,
             currentAction: '',
             authMessage: '',
             authMessageColor: 'black'
@@ -24,17 +28,17 @@ createApp({
     },
     methods: {
         loadCredentials() {
-            // Disabled for demo
-            /*          
+            // Disabled for demo (just for test purposes enabled for now)
+
             this.ipAddress = localStorage.getItem('ipAddress') || '';
             this.port = localStorage.getItem('port') || '';
             this.apiKey = localStorage.getItem('apiKey') || '';
-            
+
             // Check if credentials are available before calling listServers
             if (this.ipAddress && this.port && this.apiKey) {
                 this.listServers();
             }
-            */
+
         },
         saveCredentials() {
             localStorage.setItem('ipAddress', this.ipAddress);
@@ -61,11 +65,18 @@ createApp({
                 type: 'GET',
                 dataType: 'json',
                 success: (data) => {
-                    // Handle the response from the server
-                    if (data.success) {  // Adapt condition based on your API response
+                    if (data.success) {
                         this.authMessage = "Authentication Successful";
                         this.authMessageColor = 'green';
-                        this.connected = true;
+                        this.showValidationButton = false;  // Hide the validation button
+                        this.showAuthMessage = true;  // Show the authentication message
+    
+                        // Wait for 2 seconds (or any other time of your choosing) before calling `listServers`
+                        setTimeout(() => {
+                            this.showAuthMessage = false;  // Hide the authentication message
+                            this.connected = true;
+                            this.listServers();
+                        }, 2000);
                     } else {
                         this.authMessage = "Authentication Failed. Wrong API Key.";
                         this.authMessageColor = 'red';
@@ -75,6 +86,17 @@ createApp({
                     console.error('AJAX error: ', textStatus, errorThrown);
                     this.authMessage = "Authentication Failed. Please check your connection details.";
                     this.authMessageColor = 'red';
+                }
+            });
+        },
+toggleTheme() {
+            this.isDarkTheme = !this.isDarkTheme;
+            document.getElementById('main-stylesheet').setAttribute('href', this.isDarkTheme ? 'dark-theme.css' : 'style.css');
+        },
+        performServerAction(action, id) {
+            $.get(this.apiURL(action, id), (response) => {
+                if (response.success) {
+                    this.listServers();
                 }
             });
         },
@@ -89,6 +111,7 @@ createApp({
             });
         },
         setFilter(filterType) {
+            this.selectedFilter = filterType;
             this.currentFilter = filterType;
             this.filterServers();
         },
@@ -155,9 +178,16 @@ createApp({
                 }
             });
         },
+        showDisconnectModal() {
+            const disconnectModal = new bootstrap.Modal(document.getElementById('disconnectModal'));
+            disconnectModal.show();
+        },
         disconnectAndReload() {
-            this.removeCredentials(); // Ensure credentials are removed before reloading
-            window.location.reload(); // Refresh the page
+            this.removeCredentials();
+            this.connected = false; // Explicitly set connected status to false
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000); // Delaying reload for half a second (500 milliseconds)
         },
         disconnect() {
             this.connected = false;
@@ -186,20 +216,32 @@ createApp({
             }
 
         },
-        confirmAction(action) {
-            this.currentAction = action;
-            this.showModal = true;
+        showConfirmModal() {
+            var myModal = new bootstrap.Modal(this.$refs.confirmModal);
+            myModal.show();
+        },
+        confirmationModal() {
+            return new bootstrap.Modal(this.$refs.confirmModal);
         },
         executeAction() {
+            console.log('Action Executed: ' + this.currentAction);
+            this.showModal = false;
             if (this.currentAction === 'startAll') {
                 this.startAllServers();
             } else if (this.currentAction === 'stopAll') {
                 this.stopAllServers();
-            } else if (this.currentAction === 'restartAll') {
-                this.restartAllServers();
-            } else if (this.currentAction === 'updateAll') {
-                this.updateAllServers();
+                // } else if (this.currentAction === 'restartAll') {
+                // this.restartAllServers();
+                // } else if (this.currentAction === 'updateAll') {
+                // this.updateAllServers();
             }
+        },
+        openModal(action) {
+            this.currentAction = action;
+            this.showModal = true;
+            this.$nextTick(() => {
+                $('#confirmation-modal').modal('show');
+            });
         },
         startAllServers() {
             $.get(this.apiURL('start', 'all'), (response) => {
@@ -215,29 +257,29 @@ createApp({
                 }
             });
         },
-        restartAllServers() {
-            $.get(this.apiURL('restart', 'all'), (response) => {
-                if (response.success) {
-                    this.listServers();
-                }
-            });
-        },
-        updateAllServers() {
-            $.get(this.apiURL('update', 'all'), (response) => {
-                if (response.success) {
-                    this.listServers();
-                }
-            });
-        },
+        // restartAllServers() {
+        // $.get(this.apiURL('restart', 'all'), (response) => {
+        // if (response.success) {
+        // this.listServers();
+        // }
+        // });
+        // },
+        // updateAllServers() {
+        // $.get(this.apiURL('update', 'all'), (response) => {
+        // if (response.success) {
+        // this.listServers();
+        // }
+        // });
+        // },
         shouldShowIconInActions(server) {
             const statusIconMap = {
-                'Updating': 'https://i.ibb.co/cTtNPLB/icons8-update.gif',
-                'Update Starting': 'https://i.ibb.co/cTtNPLB/icons8-update.gif',
-                'Stopping': 'https://i.ibb.co/gMQC4c7/icons8-loading-2.gif',
-                'Error Starting': 'https://i.ibb.co/TLjDLt5/icons8-error.gif',
-                'Update Error': 'https://i.ibb.co/TLjDLt5/icons8-error.gif',
-                'Starting': 'https://i.ibb.co/6gCpQXx/icons8-loading-1.gif',
-                'Pending Update': 'https://i.ibb.co/N1VPGGK/icons8-update.gif',
+                'Updating': 'https://sedirector.adrenaline-gaming.net/images/official/updatespin.svg',
+                'Update Starting': 'https://sedirector.adrenaline-gaming.net/images/official/updatespin.svg',
+                'Stopping': 'https://sedirector.adrenaline-gaming.net/images/official/spin.svg',
+                'Error Starting': 'https://sedirector.adrenaline-gaming.net/images/official/warn3.png',
+                'Update Error': 'https://sedirector.adrenaline-gaming.net/images/official/warn3.png',
+                'Starting': 'https://sedirector.adrenaline-gaming.net/images/official/spin.svg',
+                'Pending Update': 'https://sedirector.adrenaline-gaming.net/images/official/updatepending.gif',
             };
 
             return statusIconMap[server.status] || '';
@@ -246,16 +288,16 @@ createApp({
         getStatusIconUrl(status) {
             const statusIcons = {
 
-                'Offline': 'https://i.ibb.co/VgHk2WM/offline.png',
-                'Running': 'https://i.ibb.co/pxtxwvz/running.png',
-                'Error Starting': 'https://i.ibb.co/TLjDLt5/icons8-error.gif',
-                'Update Error': 'https://i.ibb.co/TLjDLt5/icons8-error.gif',
-                'Restarting': 'https://i.ibb.co/g415yBM/restarting.png',
-                'Updating': 'https://i.ibb.co/cTtNPLB/icons8-update.gif',
-                'Update Starting': 'https://i.ibb.co/cTtNPLB/icons8-update.gif',
-                'Stopping': 'https://i.ibb.co/gMQC4c7/icons8-loading-2.gif',
-                'Starting': 'https://i.ibb.co/6gCpQXx/icons8-loading-1.gif',
-                'Pending Update': 'https://i.ibb.co/N1VPGGK/icons8-update.gif',
+                'Offline': 'https://sedirector.adrenaline-gaming.net/images/official/offline.png',
+                'Running': 'https://sedirector.adrenaline-gaming.net/images/official/running.png',
+                'Error Starting': 'https://sedirector.adrenaline-gaming.net/images/official/warn3.png',
+                'Update Error': 'https://sedirector.adrenaline-gaming.net/images/official/warn3.png',
+                'Restarting': 'https://sedirector.adrenaline-gaming.net/images/official/restartspinner.svg',
+                'Updating': 'https://sedirector.adrenaline-gaming.net/images/official/updatespin.svg',
+                'Update Starting': 'https://sedirector.adrenaline-gaming.net/images/official/updatespin.svg',
+                'Stopping': 'https://sedirector.adrenaline-gaming.net/images/official/spin.svg',
+                'Starting': 'https://sedirector.adrenaline-gaming.net/images/official/spin.svg',
+                'Pending Update': 'https://sedirector.adrenaline-gaming.net/images/official/updatepending.gif',
                 // ... other statuses
             };
 
@@ -268,23 +310,25 @@ createApp({
         }
     },
     computed: {
+		logoUrl() {
+            return this.isDarkTheme ? 
+                'https://sedirector.adrenaline-gaming.net/images/official/logo_white_text.png' :
+                'https://sedirector.adrenaline-gaming.net/images/official/logo.png';
+        },
         paginatedServers() {
-            const filteredServers = this.searchServers();
             const start = this.currentPage * this.pageSize;
             const end = start + this.pageSize;
-            return filteredServers.slice(start, end);
+            return this.filteredServers.slice(start, end);
         },
         filteredServers() {
             if (!this.searchTerm) return this.servers;
 
-            return this.servers.filter(server => {
-                return (server.name ? server.name.includes(this.searchTerm) : false) ||
-                    (server.game ? server.game.includes(this.searchTerm) : false) ||
-                    (server.status ? server.status.includes(this.searchTerm) : false) ||
-                    (server.port ? server.port.includes(this.searchTerm) : false) ||
-                    (server.serverid ? server.serverid.includes(this.searchTerm) : false);
-                // Add other fields as necessary
-            });
+            return this.servers.filter(server =>
+                server.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                server.game.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                server.status.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                server.port.toString().includes(this.searchTerm)
+            );
         },
         getGameIconUrl() {
             const gameIconUrls = {
@@ -304,7 +348,8 @@ createApp({
                 'Synergy': 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/apps/1989070/8d0699a05463f5638a1eddd0a690cfcae9cd6424.jpg',
                 'Team Fortress 2': 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/apps/440/e3f595a92552da3d664ad00277fad2107345f743.jpg',
                 'Team Fortress 2 Classic': 'https://cdn.statically.io/gh/int-72h/TF2CDownloader/main/tf2c.ico',
-                'Zombie Panic! Source': 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/apps/17500/e74eb496df79432ed99a45644ed54d1572f3e385.jpg'
+                'Zombie Panic! Source': 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/apps/17500/e74eb496df79432ed99a45644ed54d1572f3e385.jpg',
+                'Counter-Strike 2': 'https://cdn.cloudflare.steamstatic.com/steamcommunity/public/images/apps/730/8dbc71957312bbd3baea65848b545be9eae2a355.jpg'
             };
 
             return (gameName) => {
@@ -312,7 +357,15 @@ createApp({
             };
         }
     },
+    watch: {
+        searchTerm(newVal, oldVal) {
+            if (newVal !== oldVal) {
+                this.currentPage = 0;
+            }
+        }
+    },
     mounted() {
+        this.currentTheme = localStorage.getItem('theme') || 'light-theme'; // Retrieve the saved theme when app is mounted
         this.loadCredentials();
         this.startPolling();
     },
